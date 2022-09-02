@@ -24,10 +24,7 @@ const noImageURL = "http://tinyurl.com/missing-tv";
       summary : tvShow.summary,
       image : tvShow.image,
       };
-      if (tvShow.image != image){
-        return noImageURL;
-      };
-  });
+    });
   return tvShows;
 }
 
