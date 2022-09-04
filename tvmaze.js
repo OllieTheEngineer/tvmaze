@@ -13,28 +13,31 @@ const noImageURL = "http://tinyurl.com/missing-tv";
  *    (if no image URL given by API, put in a default image URL)
  */
 
- async function searchTvShows(word) {
-  let res = await axios.get(`http://api.tvmaze.com/search/shows?q=${word}`);
+//  async function searchTvShows(word) {
+//   let res = await axios.get(`http://api.tvmaze.com/search/shows?q=${word}`);
   
-  let tvShows = res.data.map(function(results){
-    let tvShow = results.tvShow;
-    return {
-      id : tvShow.id,
-      name : tvShow.name,
-      summary : tvShow.summary,
-      image : tvShow.image,
-      };
-    });
-  return tvShows;
-}
+//   let tvShows = res.data.map(function(results){
+//     let tvShow = results.tvShow;
+//     return {
+//       id : tvShow.id,
+//       name : tvShow.name,
+//       summary : tvShow.summary,
+//       image : tvShow.image,
+//       };
+//     });
+//   return tvShows;
+// }
 
-async function getShowsByTerm(show) {
+async function getShowsByTerm(term) {
   // ADD: Remove placeholder & make request to TVMaze search shows API.
-  let res = await axios.get(`http://api.tvmaze.com/search/shows?q=${show}`);
+  let res = await axios.get(`http://api.tvmaze.com/search/shows?q=${term}`);
+  console.log(res)
   let newShows = res.data.map(function(results){
-    let newShow = results.newShows;
+    let newShow = results.show;
     return newShow;
   });
+  return newShows;
+  console.log(newShows);
 
   // return [
   //   {
@@ -67,7 +70,7 @@ function populateShows(shows) {
         `<div data-show-id="${show.id}" class="Show col-md-12 col-lg-6 mb-4">
          <div class="media">
            <img 
-              src="http://static.tvmaze.com/uploads/images/medium_portrait/160/401704.jpg" 
+              src="${show.image.original}" 
               alt="Bletchly Circle San Francisco" 
               class="w-25 mr-3">
            <div class="media-body">
@@ -80,6 +83,12 @@ function populateShows(shows) {
          </div>  
        </div>
       `);
+      $show.on("click", async function (evt) {
+        evt.preventDefault();
+        let episodes = await getEpisodesOfShow(show.id);
+        await populateEpisodes(episodes);
+
+      });
 
     $showsList.append($show);  }
 }
@@ -90,7 +99,8 @@ function populateShows(shows) {
  */
 
 async function searchForShowAndDisplay() {
-  const term = $("#searchForm-term").val();
+  const term = $("#search-query").val();
+  console.log(term)
   const shows = await getShowsByTerm(term);
 
   $episodesArea.hide();
@@ -112,7 +122,7 @@ async function getEpisodesOfShow(id) {
   
   let epis = res.data.map(episode => ({
     id: episode.id,
-    title: episode.title,
+    name: episode.name,
     season: episode.season,
     number: episode.number,
   }))
@@ -123,16 +133,18 @@ async function getEpisodesOfShow(id) {
 // populate list of all episode from a show
 
 function populateEpisodes(episodes) {
-const episodeList = getElementById('episodes-list');
+const episodeList = $("#episodes-list");
+console.log(episodeList)
 episodeList.empty();
  episodes.forEach(function(epis){
+  console.log(epis)
   let list = (
     `<li>
       ${epis.name}
       (season ${epis.season}, episode ${epis.number})
       </li>
       `);
-      episodeList.appendChild(list);
+      episodeList.append(list);
   })
-    $episodesArea.tvShow();
+    $episodesArea.show();
 }
